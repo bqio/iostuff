@@ -1,5 +1,38 @@
 from .common import BinaryEndian
 from struct import unpack as up
+from jsonpickle import decode
+from io import TextIOWrapper
+from typing import Any
+
+
+class TextReader:
+    def __init__(self, file_path: str, file_encoding: str = "utf-8") -> None:
+        self.file_path = file_path
+        self.file_mode = "r"
+        self.file_encoding = file_encoding
+
+    def __enter__(self) -> TextIOWrapper:
+        self.fp = open(self.file_path, self.file_mode,
+                       encoding=self.file_encoding)
+        return self.fp
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.fp.close()
+
+
+class JsonReader:
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+        self.file_mode = "r"
+        self.file_encoding = "utf-8"
+
+    def __enter__(self) -> Any:
+        self.fp = open(self.file_path, self.file_mode,
+                       encoding=self.file_encoding)
+        return decode(self.fp.read())
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.fp.close()
 
 
 class BinaryReader:
@@ -13,7 +46,7 @@ class BinaryReader:
         self.fp = open(self.file_path, self.file_mode)
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, traceback) -> None:
         self.fp.close()
 
     def read(self, number: int) -> bytes:
@@ -60,7 +93,7 @@ class BinaryReader:
 
     def read_utf8_nt_string(self, nt: int = 0) -> str:
         byte_array = bytearray()
-        while (byte := self.read_byte()) != nt:
+        while (byte := self.read_ubyte()) != nt:
             byte_array.append(byte)
         return bytes(byte_array).decode('utf-8')
 

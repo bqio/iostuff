@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "iostuff"
-version = "0.1.0"
+version = "0.3.4"
 description = ""
 authors = ["bqio <dmitry.mikhaltsov98@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+jsonpickle = "^3.0.2"
 
 
 [tool.poetry.group.dev.dependencies]

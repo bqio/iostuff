@@ -1,4 +1,15 @@
-from iostuff.writers import MemoryWriter, BinaryWriter
+from iostuff.writers import MemoryWriter, BinaryWriter, JsonWriter
+
+
+def test_json_writer() -> None:
+    class User:
+        name: str
+        password: str
+    with JsonWriter("data2.json") as writer:
+        user = User()
+        user.name = "Admin"
+        user.password = "Admin"
+        writer.write(user)
 
 
 def test_binary_writer_write() -> None:

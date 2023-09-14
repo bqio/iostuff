@@ -1,4 +1,9 @@
-from iostuff.readers import BinaryReader
+from iostuff.readers import BinaryReader, JsonReader
+
+
+def test_json_reader() -> None:
+    with JsonReader("data.json") as json:
+        assert json == {'test': 1}
 
 
 def test_binary_reader_read() -> None:
