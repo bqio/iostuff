@@ -1,4 +1,10 @@
-from iostuff.readers import BinaryReader, JsonReader
+from iostuff.readers import BinaryReader, JsonReader, CSVReader
+
+
+def test_csv_reader() -> None:
+    with CSVReader("data2.csv") as reader:
+        for row in reader:
+            assert row[0] == '1'
 
 
 def test_json_reader() -> None:

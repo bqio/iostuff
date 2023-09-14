@@ -1,8 +1,49 @@
-from io import BytesIO
-from struct import pack as pk
+from io import BytesIO, TextIOWrapper
 from .common import BinaryEndian
+from typing import Any, Iterable
+from struct import pack as pk
 from jsonpickle import encode
-from typing import Any
+from _csv import writer
+
+
+class CSVWriter:
+    def __init__(self, file_path: str, file_encoding: str = "utf-8") -> None:
+        self.__file_path = file_path
+        self.__file_mode = "w"
+        self.__file_encoding = file_encoding
+        self.__fp = None
+        self.__writer = None
+
+    def __enter__(self):
+        self.__fp = open(self.__file_path, self.__file_mode,
+                         encoding=self.__file_encoding, newline='')
+        self.__writer = writer(self.__fp)
+        return self
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.__fp.close()
+
+    def write_row(self, row: Iterable[Any]) -> None:
+        self.__writer.writerow(row)
+
+    def write_rows(self, rows: Iterable[Iterable[Any]]) -> None:
+        self.__writer.writerows(rows)
+
+
+class TextWriter:
+    def __init__(self, file_path: str, file_encoding: str = "utf-8") -> None:
+        self.__file_path = file_path
+        self.__file_mode = "w"
+        self.__file_encoding = file_encoding
+        self.__fp = None
+
+    def __enter__(self) -> TextIOWrapper:
+        self.__fp = open(self.__file_path, self.__file_mode,
+                         encoding=self.__file_encoding)
+        return self.__fp
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.__fp.close()
 
 
 class JsonWriter:
@@ -11,6 +52,7 @@ class JsonWriter:
         self.__file_mode = "w"
         self.__file_encoding = "utf-8"
         self.__unpickable = unpickable
+        self.__fp = None
 
     def __enter__(self):
         self.__fp = open(self.__file_path, self.__file_mode,
@@ -26,10 +68,10 @@ class JsonWriter:
 
 class MemoryWriter(BytesIO):
     def __init__(self, endian: BinaryEndian = BinaryEndian.Little) -> None:
-        self.endian = "<" if endian == BinaryEndian.Little else ">"
+        self.__endian = "<" if endian == BinaryEndian.Little else ">"
 
     def __write_num(self, type: str, number: int) -> int:
-        return self.write(pk(f"{self.endian}{type}", number))
+        return self.write(pk(f"{self.__endian}{type}", number))
 
     def write_ubyte(self, number: int) -> int:
         return self.__write_num("B", number)
@@ -73,15 +115,14 @@ class MemoryWriter(BytesIO):
 class BinaryWriter(MemoryWriter):
     def __init__(self, file_path: str, endian: BinaryEndian = BinaryEndian.Little) -> None:
         super().__init__(endian)
-        self.file_path = file_path
-        self.endian = "<" if endian == BinaryEndian.Little else ">"
-        self.file_mode = "wb"
-        self.fp = None
+        self.__file_path = file_path
+        self.__file_mode = "wb"
+        self.__fp = None
 
     def __enter__(self):
-        self.fp = open(self.file_path, self.file_mode)
+        self.__fp = open(self.__file_path, self.__file_mode)
         return self
 
     def __exit__(self, type, value, traceback):
-        self.fp.write(self.getbuffer())
-        self.fp.close()
+        self.__fp.write(self.getbuffer())
+        self.__fp.close()

@@ -1,4 +1,9 @@
-from iostuff.writers import MemoryWriter, BinaryWriter, JsonWriter
+from iostuff.writers import MemoryWriter, BinaryWriter, JsonWriter, CSVWriter
+
+
+def test_csv_writer() -> None:
+    with CSVWriter("data.csv") as writer:
+        writer.write_row((1, 2, 3))
 
 
 def test_json_writer() -> None:

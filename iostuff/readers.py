@@ -3,57 +3,76 @@ from struct import unpack as up
 from jsonpickle import decode
 from io import TextIOWrapper
 from typing import Any
+from _csv import reader
+
+
+class CSVReader:
+    def __init__(self, file_path: str, file_encoding: str = "utf-8") -> None:
+        self.__file_path = file_path
+        self.__file_mode = "r"
+        self.__file_encoding = file_encoding
+        self.__fp = None
+
+    def __enter__(self):
+        self.__fp = open(self.__file_path, self.__file_mode,
+                         encoding=self.__file_encoding, newline='')
+        return reader(self.__fp)
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.__fp.close()
 
 
 class TextReader:
     def __init__(self, file_path: str, file_encoding: str = "utf-8") -> None:
-        self.file_path = file_path
-        self.file_mode = "r"
-        self.file_encoding = file_encoding
+        self.__file_path = file_path
+        self.__file_mode = "r"
+        self.__file_encoding = file_encoding
+        self.__fp = None
 
     def __enter__(self) -> TextIOWrapper:
-        self.fp = open(self.file_path, self.file_mode,
-                       encoding=self.file_encoding)
-        return self.fp
+        self.__fp = open(self.__file_path, self.__file_mode,
+                         encoding=self.__file_encoding)
+        return self.__fp
 
     def __exit__(self, type, value, traceback) -> None:
-        self.fp.close()
+        self.__fp.close()
 
 
 class JsonReader:
     def __init__(self, file_path: str) -> None:
-        self.file_path = file_path
-        self.file_mode = "r"
-        self.file_encoding = "utf-8"
+        self.__file_path = file_path
+        self.__file_mode = "r"
+        self.__file_encoding = "utf-8"
+        self.__fp = None
 
     def __enter__(self) -> Any:
-        self.fp = open(self.file_path, self.file_mode,
-                       encoding=self.file_encoding)
-        return decode(self.fp.read())
+        self.__fp = open(self.__file_path, self.__file_mode,
+                         encoding=self.__file_encoding)
+        return decode(self.__fp.read())
 
     def __exit__(self, type, value, traceback) -> None:
-        self.fp.close()
+        self.__fp.close()
 
 
 class BinaryReader:
     def __init__(self, file_path: str, endian: BinaryEndian = BinaryEndian.Little) -> None:
-        self.file_path = file_path
-        self.endian = "<" if endian == BinaryEndian.Little else ">"
-        self.file_mode = "rb"
-        self.fp = None
+        self.__file_path = file_path
+        self.__endian = "<" if endian == BinaryEndian.Little else ">"
+        self.__file_mode = "rb"
+        self.__fp = None
 
     def __enter__(self):
-        self.fp = open(self.file_path, self.file_mode)
+        self.__fp = open(self.__file_path, self.__file_mode)
         return self
 
     def __exit__(self, type, value, traceback) -> None:
-        self.fp.close()
+        self.__fp.close()
 
     def read(self, number: int) -> bytes:
-        return self.fp.read(number)
+        return self.__fp.read(number)
 
     def __read_num(self, type: str, size: int) -> int:
-        return up(f"{self.endian}{type}", self.read(size))[0]
+        return up(f"{self.__endian}{type}", self.read(size))[0]
 
     def read_ubyte(self) -> int:
         return self.__read_num("B", 1)
@@ -80,10 +99,10 @@ class BinaryReader:
         return self.__read_num("q", 8)
 
     def seek(self, offset: int) -> int:
-        return self.fp.seek(offset)
+        return self.__fp.seek(offset)
 
     def tell(self) -> int:
-        return self.fp.tell()
+        return self.__fp.tell()
 
     def skip(self, number: int) -> int:
         return self.seek(self.tell() + number)
