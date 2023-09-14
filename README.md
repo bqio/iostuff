@@ -1,9 +1,9 @@
 ## Python IO library
 
-## Download & Install
+### Download & Install
 
-- pip install iofstuff
+- pip install iostuff
 
-## Repo
+### Repo
 
 - https://pypi.org/project/iostuff/
